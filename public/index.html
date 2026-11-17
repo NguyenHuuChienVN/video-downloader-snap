@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tải video không logo & ảnh – TikTok, Instagram, Facebook, X</title>
+<meta name="description" content="Dán liên kết để tải video không logo và ảnh gốc từ TikTok, Instagram, Facebook, X miễn phí.">
+<style>
+:root{color-scheme:light;--bg:#f4f6fb;--fg:#182230;--card:#fff;--mut:#667085;--ac:#5b5bf0;--ac-hover:#4848df;--bd:#e4e7ec;--err:#d92d20;--shadow:0 12px 32px rgba(16,24,40,.08)}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#10131a;--fg:#eef0f6;--card:#1a1f2b;--mut:#a0a9ba;--ac:#6868f5;--ac-hover:#7b7bf8;--bd:#2d3443;--err:#f97066;--shadow:0 12px 32px rgba(0,0,0,.2)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:clamp(32px,7vw,72px) 20px 40px;text-align:center}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.15;margin:0 0 12px;letter-spacing:-.03em}
+p.sub{color:var(--mut);margin:0 auto 28px;max-width:560px}
+form{display:flex;gap:10px;flex-wrap:wrap;padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:18px;box-shadow:var(--shadow)}
+input{min-width:0;flex:1 1 280px;padding:13px 15px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);font:inherit;text-align:left}
+input:focus{outline:3px solid color-mix(in srgb,var(--ac) 30%,transparent);border-color:var(--ac)}
+button,a.dl{padding:12px 20px;border-radius:12px;border:0;background:var(--ac);color:#fff;font:inherit;font-weight:650;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s ease,transform .15s ease}
+button:hover,a.dl:hover{background:var(--ac-hover)}
+button:active,a.dl:active{transform:translateY(1px)}
+button.alt{background:var(--bg);color:var(--fg);border:1px solid var(--bd)}
+button.alt:hover{background:var(--bd)}
+button:disabled{opacity:.6;cursor:wait}
+#msg{max-width:720px;margin:20px auto 16px;color:var(--mut);word-break:break-word}
+#msg:not(:empty){padding:12px 14px;background:var(--card);border:1px solid var(--bd);border-radius:12px}
+#msg.err{color:var(--err)}
+#out{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;align-items:flex-start}
+.card{flex:0 1 320px;min-width:0;background:var(--card);border:1px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.card img{width:100%;aspect-ratio:4/3;object-fit:contain;display:block;background:var(--bg)}
+.btns{display:flex;flex-direction:column;gap:9px;padding:14px}
+.btns a{text-align:center}
+small{display:block;margin:40px auto 0;max-width:720px;color:var(--mut);text-align:center}
+@media(max-width:520px){main{padding:36px 16px 28px}form{padding:10px}form input{flex-basis:100%}form button{flex:1}.btns{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Tải video không logo & ảnh</h1>
+  <p class="sub">Hỗ trợ TikTok, Douyin, Instagram, Facebook, X (Twitter). Chỉ cần dán liên kết.</p>
+  <form id="f">
+    <input id="u" type="url" placeholder="Dán liên kết video / ảnh tại đây…" required autocomplete="off">
+    <button class="alt" type="button" id="paste">Dán</button>
+    <button id="go" type="submit">Tải xuống</button>
+  </form>
+  <div id="msg" role="status" aria-live="polite"></div>
+  <div id="out"></div>
+  <small>Chỉ tải nội dung công khai mà bạn có quyền sử dụng. Bạn chịu trách nhiệm tuân thủ bản quyền và điều khoản của từng nền tảng.</small>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const input = $('#u'), msg = $('#msg'), out = $('#out'), btn = $('#go');
+const say = (t, err) => { msg.textContent = t || ''; msg.className = err ? 'err' : ''; };
+
+$('#paste').onclick = async () => {
+  try { input.value = await navigator.clipboard.readText(); }
+  catch { say('Trình duyệt không cho dán tự động, hãy dán thủ công.', true); }
+};
+
+$('#f').onsubmit = async e => {
+  e.preventDefault();
+  out.replaceChildren(); say('Đang phân tích liên kết…'); btn.disabled = true;
+  try {
+    const r = await fetch('/api/info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: input.value.trim() }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Có lỗi xảy ra, hãy thử lại.');
+    say(d.title);
+    d.items.forEach((it, i) => out.append(card(d, it, i)));
+  } catch (err) { say(err.message, true); }
+  finally { btn.disabled = false; }
+};
+
+function link(text, href) {
+  const a = document.createElement('a');
+  a.className = 'dl'; a.textContent = text; a.href = href; a.target = '_blank'; a.rel = 'noopener';
+  return a;
+}
+function card(d, it, i) {
+  const c = document.createElement('div'); c.className = 'card';
+  if (it.thumb) {
+    const im = new Image(); im.alt = ''; im.loading = 'lazy';
+    im.onerror = () => im.remove();
+    im.src = '/api/image?' + new URLSearchParams({ inline: '1', url: it.thumb });
+    c.append(im);
+  }
+  const b = document.createElement('div'); b.className = 'btns';
+  const name = d.title + (d.multi ? '-' + (i + 1) : '');
+  it.videos.forEach(v => {
+    const p = { url: d.url, format: v.id, name };
+    if (d.multi) p.index = it.index;
+    b.append(link('Tải video ' + v.label, '/api/download?' + new URLSearchParams(p)));
+  });
+  if (it.image) b.append(link('Tải ảnh gốc', '/api/image?' + new URLSearchParams({ url: it.image, name })));
+  c.append(b);
+  return c;
+}
+</script>
+</body>
+</html>
